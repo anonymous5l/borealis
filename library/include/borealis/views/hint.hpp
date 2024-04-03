@@ -29,6 +29,7 @@ class Hint : public Box
 {
   public:
     Hint(Action action, bool allowAButtonTouch = false);
+    void setAction(Action action, bool allowAButtonTouch);
     static std::string getKeyIcon(ControllerButton button, bool ignoreKeysSwap = false);
 
   private:

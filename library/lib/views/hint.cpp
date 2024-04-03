@@ -55,23 +55,33 @@ const std::string hintXML = R"xml(
 
 Hint::Hint(Action action, bool allowAButtonTouch)
     : Box(Axis::ROW)
-    , action(action)
 {
     this->inflateFromXMLString(hintXML);
     this->setFocusable(false);
 
+    this->setAction(action, allowAButtonTouch);
+}
+
+void Hint::setAction(Action action, bool allowAButtonTouch) {
+    this->action = action;
+
+    Theme theme = Application::getTheme();
+
+    icon->setTextColor(theme["brls/text"]);
+    hint->setTextColor(theme["brls/text"]);
+
     icon->setText(getKeyIcon(action.button));
     hint->setText(action.hintText);
 
-    if ((action.button != BUTTON_A || allowAButtonTouch) && action.available && !Application::isInputBlocks())
-    {
+    if ((action.button != BUTTON_A || allowAButtonTouch) && action.available && !Application::isInputBlocks()) {
+        auto gr = this->getGestureRecognizers();
+        gr.erase(gr.begin(), gr.end());
+
         this->addGestureRecognizer(new TapGestureRecognizer(this, [this, action]()
             { action.actionListener(this); }));
     }
 
-    if (!action.available || Application::isInputBlocks())
-    {
-        Theme theme = Application::getTheme();
+    if (!action.available) {
         icon->setTextColor(theme["brls/text_disabled"]);
         hint->setTextColor(theme["brls/text_disabled"]);
     }
@@ -153,9 +163,6 @@ void Hints::refillHints(View* focusView)
     if (!focusView)
         return;
 
-    // todo: 做一个缓存，可以节约 Hint 组件生成
-    clearViews();
-
     std::set<ControllerButton> addedButtons; // we only ever want one action per key
     std::vector<Action> actions;
 
@@ -184,10 +191,25 @@ void Hints::refillHints(View* focusView)
     // Sort the actions
     std::stable_sort(actions.begin(), actions.end(), Hints::actionsSortFunc);
 
-    for (Action action : actions)
-    {
-        Hint* hint = new Hint(action, allowAButtonTouch);
-        addView(hint);
+    auto children = this->getChildren();
+
+    int i = 0;
+
+    for (i = 0; i < actions.size(); i++) {
+        if (i >= children.size()) {
+            Hint* hint = new Hint(actions[i], allowAButtonTouch);
+            addView(hint);
+        } else {
+            auto hint = (Hint*)children[i];
+            hint->setAction(actions[i], allowAButtonTouch);
+            if (hint->getVisibility() == brls::Visibility::GONE) {
+                hint->setVisibility(brls::Visibility::VISIBLE);
+            }
+        }
+    }
+
+    for (; i < children.size(); i++) {
+        children[i]->setVisibility(brls::Visibility::GONE);
     }
 }
 

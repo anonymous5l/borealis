@@ -75,10 +75,10 @@ void BatteryWidget::applyBackTheme(ThemeVariant theme)
     switch (theme)
     {
         case ThemeVariant::LIGHT:
-            back->setImageFromRes("img/sys/battery_back_light.png");
+            back->setImageFromRes("img/sys/battery_back_light.svg");
             break;
         case ThemeVariant::DARK:
-            back->setImageFromRes("img/sys/battery_back_dark.png");
+            back->setImageFromRes("img/sys/battery_back_dark.svg");
             break;
     }
 }

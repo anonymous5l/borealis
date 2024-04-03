@@ -303,7 +303,18 @@ void Image::setImageFromRes(const std::string& path)
     if (checkCache("@res/" + path) > 0)
         return;
     auto image = romfs::get(path);
-    this->setImageFromMem((unsigned char*)image.data(), (int)image.size());
+    if (endsWith(path,".svg")) {
+        auto document = lunasvg::Document::loadFromData((const char*)image.data(), (std::size_t)image.size());
+        if (!document) {
+            return;
+        }
+
+        int tex = this->createSVGTexture(document);
+
+        innerSetImage(tex);
+    } else {
+        this->setImageFromMem((unsigned char*)image.data(), (int)image.size());
+    }
     TextureCache::instance().addCache("@res/" + path, this->texture);
 #else
     this->setImageFromFile(std::string(BRLS_RESOURCES) + path);
@@ -323,6 +334,23 @@ int Image::getImageFlags()
     return 0;
 }
 
+int Image::createSVGTexture(std::unique_ptr<lunasvg::Document> &document) {
+    float width  = this->getWidth() * brls::Application::windowScale;
+    float height = this->getHeight() * brls::Application::windowScale;
+    auto bitmap  = document->renderToBitmap((uint32_t)width, (uint32_t)height);
+    bitmap.convertToRGBA();
+
+    int tex = nvgCreateImageRGBA(Application::getNVGContext(),
+        (int)bitmap.width(), (int)bitmap.height(),
+        this->getImageFlags(), bitmap.data());
+
+    if (tex <= 0) {
+        return tex;
+    }
+
+    return tex;
+}
+
 void Image::setImageFromFile(const std::string& path)
 {
     // Let TextureCache to manage when to delete texture
@@ -335,8 +363,24 @@ void Image::setImageFromFile(const std::string& path)
     if (checkCache(path) > 0)
         return;
 
-    // Load texture
-    int tex = nvgCreateImage(Application::getNVGContext(), path.c_str(), this->getImageFlags());
+    int tex = 0;
+
+    if (endsWith(path,".svg")) {
+        auto document = lunasvg::Document::loadFromFile(path);
+        if (!document) {
+            return;
+        }
+
+        tex = this->createSVGTexture(document);
+    } else {
+        // Load texture
+        tex = nvgCreateImage(Application::getNVGContext(), path.c_str(), this->getImageFlags());
+    }
+
+    if (tex <= 0) {
+        return;
+    }
+
     innerSetImage(tex);
 
     // Save cache
@@ -348,7 +392,8 @@ void Image::setImageFromMem(const unsigned char* data, int size)
     NVGcontext* vg = Application::getNVGContext();
 
     // Load texture
-    innerSetImage(nvgCreateImageMem(vg, 0, const_cast<unsigned char*>(data), size));
+    innerSetImage(nvgCreateImageMem(vg, this->getImageFlags(),
+        const_cast<unsigned char*>(data), size));
 }
 
 void Image::setImageAsync(std::function<void(std::function<void(const std::string&, size_t length)>)> cb)

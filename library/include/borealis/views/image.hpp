@@ -20,6 +20,8 @@
 
 #include <borealis/core/view.hpp>
 
+#include <lunasvg.h>
+
 namespace brls
 {
 
@@ -152,6 +154,7 @@ class Image : public View
 
     void invalidateImageBounds();
     int getImageFlags();
+    int createSVGTexture(std::unique_ptr<lunasvg::Document> &document);
     size_t checkCache(const std::string& path);
 
     float originalImageWidth  = 0;

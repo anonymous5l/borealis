@@ -76,18 +76,18 @@ void WirelessWidget::applyTheme(ThemeVariant theme)
     switch (theme)
     {
         case ThemeVariant::LIGHT:
-            _0->setImageFromRes("img/sys/wifi_0_light.png");
-            _1->setImageFromRes("img/sys/wifi_1_light.png");
-            _2->setImageFromRes("img/sys/wifi_2_light.png");
-            _3->setImageFromRes("img/sys/wifi_3_light.png");
-            ethernet->setImageFromRes("img/sys/ethernet_light.png");
+            _0->setImageFromRes("img/sys/wifi_0_light.svg");
+            _1->setImageFromRes("img/sys/wifi_1_light.svg");
+            _2->setImageFromRes("img/sys/wifi_2_light.svg");
+            _3->setImageFromRes("img/sys/wifi_3_light.svg");
+            ethernet->setImageFromRes("img/sys/ethernet_light.svg");
             break;
         case ThemeVariant::DARK:
-            _0->setImageFromRes("img/sys/wifi_0_dark.png");
-            _1->setImageFromRes("img/sys/wifi_1_dark.png");
-            _2->setImageFromRes("img/sys/wifi_2_dark.png");
-            _3->setImageFromRes("img/sys/wifi_3_dark.png");
-            ethernet->setImageFromRes("img/sys/ethernet_dark.png");
+            _0->setImageFromRes("img/sys/wifi_0_dark.svg");
+            _1->setImageFromRes("img/sys/wifi_1_dark.svg");
+            _2->setImageFromRes("img/sys/wifi_2_dark.svg");
+            _3->setImageFromRes("img/sys/wifi_3_dark.svg");
+            ethernet->setImageFromRes("img/sys/ethernet_dark.svg");
             break;
     }
 }

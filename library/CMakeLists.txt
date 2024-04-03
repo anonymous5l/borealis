@@ -65,6 +65,10 @@ else()
     list(APPEND BRLS_PLATFORM_LIBS tinyxml2)
 endif()
 
+# lunasvg
+add_subdirectory(${BOREALIS_PATH}/lib/extern/lunasvg)
+list(APPEND BRLS_PLATFORM_LIBS lunasvg)
+
 # dbus
 if (UNIX AND NOT APPLE AND NOT ANDROID)
     find_package(DBus)

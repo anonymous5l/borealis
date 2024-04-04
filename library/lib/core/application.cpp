@@ -465,7 +465,10 @@ void Application::navigate(FocusDirection direction, bool repeating)
     if (!nextFocus)
     {
         Application::getAudioPlayer()->play(SOUND_FOCUS_ERROR);
-        Application::currentFocus->shakeHighlight(direction);
+        if (Application::currentFocus)
+        {
+            Application::currentFocus->shakeHighlight(direction);
+        }
         return;
     }
 
@@ -478,7 +481,10 @@ void Application::navigate(FocusDirection direction, bool repeating)
     }
     else
     {
-        Application::currentFocus->shakeHighlight(direction);
+        if (Application::currentFocus)
+        {
+            Application::currentFocus->shakeHighlight(direction);
+        }
     }
 }
 
@@ -525,12 +531,16 @@ bool Application::setInputType(InputType type)
     if (type == InputType::GAMEPAD)
     {
         Application::setDrawCoursor(false);
-        Application::currentFocus->onFocusGained();
+        if (Application::currentFocus)
+        {
+            Application::currentFocus->onFocusGained();
+        }
     }
 
     return true;
 }
 
+// return value may nullptr
 View* Application::getCurrentFocus()
 {
     return Application::currentFocus;
@@ -622,8 +632,7 @@ bool Application::handleAction(char button, bool repeating)
 
             if (action.available && (!repeating || action.allowRepeating))
             {
-                if (action.actionListener(hintParent))
-                {
+                if (action.actionListener(hintParent)) {
                     setInputType(InputType::GAMEPAD);
                     if (button == BUTTON_A)
                         hintParent->playClickAnimation();
@@ -774,7 +783,7 @@ void Application::giveFocus(View* view)
     View* oldFocus = Application::currentFocus;
     View* newFocus = view ? view->getDefaultFocus() : nullptr;
 
-    if (oldFocus != newFocus && newFocus != nullptr)
+    if (oldFocus != newFocus)
     {
         if (oldFocus)
             oldFocus->onFocusLost();
@@ -832,6 +841,8 @@ bool Application::popActivity(TransitionAnimation animation, std::function<void(
         }
 
         Application::focusStack.pop_back();
+    } else {
+        Application::giveFocus(nullptr);
     }
 
     // Hide animation (and show previous activity, if any)

@@ -315,6 +315,7 @@ class Application
     inline static std::vector<View*> focusStack;
     inline static std::deque<View*> deletionPool;
 
+    // may nullptr
     inline static View* currentFocus = nullptr;
     inline static std::vector<TouchState> currentTouchState;
     inline static MouseState currentMouseState;

@@ -141,7 +141,7 @@ Dialog::Dialog(Box* contentView)
     this->inflateFromXMLString(dialogXML);
     container->addView(contentView);
 
-    appletFrame->registerAction(
+    this->appletFrame->registerAction(
         "hints/back"_i18n, BUTTON_B, [this](View* view) {
             if (cancelable)
                 this->dismiss();
@@ -169,7 +169,7 @@ Dialog::Dialog(std::string text)
     this->inflateFromXMLString(dialogXML);
     container->addView(box);
 
-    appletFrame->registerAction(
+    this->appletFrame->registerAction(
         "hints/back"_i18n, BUTTON_B, [this](View* view) {
             if (cancelable)
                 this->dismiss();

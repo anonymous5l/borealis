@@ -141,8 +141,7 @@ Hints::Hints()
             if (!AppletFrame::HIDE_BOTTOM_BAR || forceShown)
             {
                 refillHints(Application::getCurrentFocus());
-            }
-        });
+            } });
 
     this->registerBoolXMLAttribute("addBaseAction", [this](bool value)
         { this->setAddUnableAButtonAction(value); });
@@ -161,15 +160,15 @@ Hints::~Hints()
 
 void Hints::refillHints(View* focusView)
 {
-    // focusView may nullptr
+    if (!focusView)
+        return;
+
     std::set<ControllerButton> addedButtons; // we only ever want one action per key
     std::vector<Action> actions;
 
-    View *cur = focusView;
-
-    while (cur != nullptr)
+    while (focusView != nullptr)
     {
-        for (auto& action : cur->getActions())
+        for (auto& action : focusView->getActions())
         {
             if (action.hidden)
                 continue;
@@ -181,41 +180,28 @@ void Hints::refillHints(View* focusView)
             actions.push_back(action);
         }
 
-        cur = cur->getParent();
+        focusView = focusView->getParent();
     }
 
-    if (addUnableAButtonAction &&
-        std::find(actions.begin(), actions.end(), BUTTON_A) == actions.end() &&
-        focusView) {
-        actions.push_back(Action {
-            .button = BUTTON_A,
-            .identifier = 0,
-            .hintText = "hints/ok"_i18n,
-            .available = false,
-            .hidden = false,
-            .allowRepeating = false,
-            .sound = Sound::SOUND_NONE,
-            .actionListener = NULL
-        });
+    if (addUnableAButtonAction && std::find(actions.begin(), actions.end(), BUTTON_A) == actions.end())
+    {
+        actions.push_back(Action { BUTTON_A, 0, "hints/ok"_i18n, false, false, false, Sound::SOUND_NONE, NULL });
     }
 
-    if (!actions.empty()) {
-        // Sort the actions
-        std::stable_sort(actions.begin(), actions.end(), Hints::actionsSortFunc);
-    }
+    // Sort the actions
+    std::stable_sort(actions.begin(), actions.end(), Hints::actionsSortFunc);
 
     auto children = this->getChildren();
 
-    int i;
+    int i = 0;
 
     for (i = 0; i < actions.size(); i++) {
-        auto action = actions[i];
         if (i >= children.size()) {
-            Hint* hint = new Hint(action, allowAButtonTouch);
+            Hint* hint = new Hint(actions[i], allowAButtonTouch);
             addView(hint);
         } else {
             auto hint = (Hint*)children[i];
-            hint->setAction(action, allowAButtonTouch);
+            hint->setAction(actions[i], allowAButtonTouch);
             if (hint->getVisibility() == brls::Visibility::GONE) {
                 hint->setVisibility(brls::Visibility::VISIBLE);
             }

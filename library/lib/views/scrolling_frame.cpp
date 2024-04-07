@@ -481,7 +481,6 @@ void ScrollingFrame::onChildFocusGained(View* directChild, View* focusedView)
 {
     Box::onChildFocusGained(directChild, focusedView);
 
-    this->focused = true;
     this->childFocused = true;
 
     // Start scrolling
@@ -491,7 +490,6 @@ void ScrollingFrame::onChildFocusGained(View* directChild, View* focusedView)
 
 void ScrollingFrame::onChildFocusLost(View* directChild, View* focusedView)
 {
-    this->focused = false;
     this->childFocused = false;
 }
 

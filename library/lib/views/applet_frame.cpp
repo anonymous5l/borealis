@@ -117,10 +117,10 @@ AppletFrame::AppletFrame()
             this->setFooterVisibility(value ? Visibility::GONE : Visibility::VISIBLE); });
 
     this->registerAction(
-        "hints/back"_i18n, BUTTON_B, [this](View* view) {
-            this->popContentView();
-            return true;
-        },
+        "hints/back"_i18n, BUTTON_B, [this](View* view)
+        {
+            this->contentViewStack.back()->dismiss();
+            return true; },
         false, false, SOUND_BACK);
 }
 
@@ -170,10 +170,11 @@ void AppletFrame::popContentView(std::function<void(void)> cb)
 {
     if (contentViewStack.size() <= 1)
     {
-        if (!Application::popActivity(TransitionAnimation::FADE, cb)) {
+        if (!Application::popActivity(TransitionAnimation::FADE, cb))
+        {
 #ifndef IOS // Do not close the app in iOS
             auto dialog = new brls::Dialog("hints/exit_hint"_i18n);
-            dialog->addButton("hints/cancel"_i18n, [this]() { });
+            dialog->addButton("hints/cancel"_i18n, []() {});
             dialog->addButton("hints/ok"_i18n, []()
                 { Application::quit(); });
             dialog->open();

@@ -70,8 +70,7 @@ SidebarItem::SidebarItem()
         "hints/ok"_i18n, BUTTON_A, [](View* view)
         {
             Application::onControllerButtonPressed(BUTTON_NAV_RIGHT, false);
-            return true;
-        },
+            return true; },
         false, false, SOUND_CLICK_SIDEBAR);
 
     this->addGestureRecognizer(new TapGestureRecognizer([this](TapGestureStatus status, Sound* soundToPlay)

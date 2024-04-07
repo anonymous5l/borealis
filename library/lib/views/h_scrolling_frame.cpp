@@ -481,7 +481,6 @@ void HScrollingFrame::onChildFocusGained(View* directChild, View* focusedView)
 {
     Box::onChildFocusGained(directChild, focusedView);
 
-    this->focused = true;
     this->childFocused = true;
 
     // Start scrolling
@@ -491,12 +490,6 @@ void HScrollingFrame::onChildFocusGained(View* directChild, View* focusedView)
 
 void HScrollingFrame::onChildFocusLost(View* directChild, View* focusedView)
 {
-    Box::onChildFocusLost(directChild, focusedView);
-
-    if (focusedView != this) {
-        this->focused = false;
-    }
-
     this->childFocused = false;
 }
 

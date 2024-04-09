@@ -33,6 +33,10 @@
             <RecyclingListTab />
         </brls:Tab>
 
+        <brls:Tab label="@i18n/demo/tabs/recycling">
+            <RecyclingTest />
+        </brls:Tab>
+
         <brls:Separator />
 
         <brls:Tab label="@i18n/demo/tabs/settings">

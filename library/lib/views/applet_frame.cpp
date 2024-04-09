@@ -119,8 +119,14 @@ AppletFrame::AppletFrame()
     this->registerAction(
         "hints/back"_i18n, BUTTON_B, [this](View* view)
         {
-            this->contentViewStack.back()->dismiss();
-            return true; },
+            if (!this->contentViewStack.empty())
+            {
+                this->contentViewStack.back()->dismiss();
+            } else {
+                this->popContentView();
+            }
+            return true;
+        },
         false, false, SOUND_BACK);
 }
 

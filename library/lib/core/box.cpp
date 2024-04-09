@@ -220,11 +220,21 @@ void Box::removeView(View* view, bool free)
         YGNodeRemoveChild(this->ygNode, view->getYGNode());
     this->children.erase(this->children.begin() + index);
 
+    if (this->lastFocusedView == view) {
+        this->lastFocusedView = nullptr;
+    }
+    view->resetClickAnimation();
     view->willDisappear(true);
     if (free)
         view->freeView();
 
     this->invalidate();
+
+    view->setParent(nullptr);
+
+    if (view->isFocused() && Application::getCurrentFocus() == view) {
+        Application::giveFocus(nullptr);
+    }
 }
 
 void Box::clearViews(bool free)

@@ -136,12 +136,16 @@ Hints::Hints()
     setAxis(Axis::ROW);
     setDirection(Direction::LEFT_TO_RIGHT);
 
-    hintSubscription = Application::getGlobalHintsUpdateEvent()->subscribe([this]()
+    hintSubscription = Application::getGlobalHintsUpdateEvent()->subscribe([this](){
+        if (!AppletFrame::HIDE_BOTTOM_BAR || forceShown)
         {
-            if (!AppletFrame::HIDE_BOTTOM_BAR || forceShown)
-            {
-                refillHints(Application::getCurrentFocus());
-            } });
+            refillHints(Application::getCurrentFocus());
+        }
+    });
+
+    Application::getExitEvent()->subscribe([this]() {
+       Application::getGlobalHintsUpdateEvent()->unsubscribe(hintSubscription);
+    });
 
     this->registerBoolXMLAttribute("addBaseAction", [this](bool value)
         { this->setAddUnableAButtonAction(value); });
@@ -160,15 +164,14 @@ Hints::~Hints()
 
 void Hints::refillHints(View* focusView)
 {
-    if (!focusView)
-        return;
-
     std::set<ControllerButton> addedButtons; // we only ever want one action per key
     std::vector<Action> actions;
 
-    while (focusView != nullptr)
+    auto cursor = focusView;
+
+    while (cursor != nullptr)
     {
-        for (auto& action : focusView->getActions())
+        for (auto& action : cursor->getActions())
         {
             if (action.hidden)
                 continue;
@@ -180,16 +183,21 @@ void Hints::refillHints(View* focusView)
             actions.push_back(action);
         }
 
-        focusView = focusView->getParent();
+        cursor = cursor->getParent();
     }
 
-    if (addUnableAButtonAction && std::find(actions.begin(), actions.end(), BUTTON_A) == actions.end())
+    if (addUnableAButtonAction
+        && std::find(actions.begin(), actions.end(), BUTTON_A) == actions.end()
+        && focusView != nullptr)
     {
         actions.push_back(Action { BUTTON_A, 0, "hints/ok"_i18n, false, false, false, Sound::SOUND_NONE, NULL });
     }
 
-    // Sort the actions
-    std::stable_sort(actions.begin(), actions.end(), Hints::actionsSortFunc);
+    if (!actions.empty())
+    {
+        // Sort the actions
+        std::stable_sort(actions.begin(), actions.end(), Hints::actionsSortFunc);
+    }
 
     auto children = this->getChildren();
 

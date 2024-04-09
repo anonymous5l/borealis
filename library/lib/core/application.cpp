@@ -439,6 +439,7 @@ void Application::navigate(FocusDirection direction, bool repeating)
     // By View ptr
     if (currentFocus->hasCustomNavigationRouteByPtr(direction))
     {
+        brls::Logger::debug("hasCustomNavigationRouteByPtr");
         nextFocus = currentFocus->getCustomNavigationRoutePtr(direction);
 
         if (!nextFocus)
@@ -465,7 +466,8 @@ void Application::navigate(FocusDirection direction, bool repeating)
     if (!nextFocus)
     {
         Application::getAudioPlayer()->play(SOUND_FOCUS_ERROR);
-        Application::currentFocus->shakeHighlight(direction);
+        if (Application::currentFocus)
+            Application::currentFocus->shakeHighlight(direction);
         return;
     }
 
@@ -478,7 +480,8 @@ void Application::navigate(FocusDirection direction, bool repeating)
     }
     else
     {
-        Application::currentFocus->shakeHighlight(direction);
+        if (Application::currentFocus)
+            Application::currentFocus->shakeHighlight(direction);
     }
 }
 
@@ -525,7 +528,8 @@ bool Application::setInputType(InputType type)
     if (type == InputType::GAMEPAD)
     {
         Application::setDrawCoursor(false);
-        Application::currentFocus->onFocusGained();
+        if (Application::currentFocus)
+            Application::currentFocus->onFocusGained();
     }
 
     return true;
@@ -620,16 +624,16 @@ bool Application::handleAction(char button, bool repeating)
             if (consumedButtons.find(action.button) != consumedButtons.end())
                 continue;
 
-            if (action.available && (!repeating || action.allowRepeating))
+            if (action.available && (!repeating || action.allowRepeating) && action.actionListener)
             {
-                if (action.actionListener(hintParent))
-                {
-                    setInputType(InputType::GAMEPAD);
-                    if (button == BUTTON_A)
-                        hintParent->playClickAnimation();
+                setInputType(InputType::GAMEPAD);
+                if (button == BUTTON_A) {
+                    hintParent->playClickAnimation();
+                }
 
-                    Application::getAudioPlayer()->play(action.sound);
+                Application::getAudioPlayer()->play(action.sound);
 
+                if (action.actionListener(hintParent)) {
                     consumedButtons.insert(action.button);
                 }
             }
@@ -774,10 +778,12 @@ void Application::giveFocus(View* view)
     View* oldFocus = Application::currentFocus;
     View* newFocus = view ? view->getDefaultFocus() : nullptr;
 
-    if (oldFocus != newFocus && newFocus != nullptr)
+    if (oldFocus != newFocus)
     {
         if (oldFocus)
+        {
             oldFocus->onFocusLost();
+        }
 
         Application::currentFocus = newFocus;
         Application::globalFocusChangeEvent.fire(newFocus);

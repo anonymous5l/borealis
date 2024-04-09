@@ -39,7 +39,10 @@ class Slider : public Box
 
     float getProgress();
 
+    bool isProgressing();
+
     Event<float>* getProgressEvent();
+    Event<float>* getInputProgressEvent();
 
     void setStep(float step);
 
@@ -53,7 +56,11 @@ class Slider : public Box
     Rectangle* lineEmpty;
     Rectangle* pointer;
 
+    bool inProgressing = false;
+    bool onGesture = false;
+
     Event<float> progressEvent;
+    Event<float> inputProgressEvent;
 
     float progress = 1;
     float step = 0.5f;

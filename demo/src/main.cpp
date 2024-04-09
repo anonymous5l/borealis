@@ -28,6 +28,7 @@
 #include "tab/components_tab.hpp"
 #include "tab/transform_tab.hpp"
 #include "tab/recycling_list_tab.hpp"
+#include "tab/recycling_test.hpp"
 #include "tab/settings_tab.hpp"
 #include "tab/text_test_tab.hpp"
 #include "activity/main_activity.hpp"
@@ -65,6 +66,7 @@ int main(int argc, char* argv[])
     // Register custom views (including tabs, which are views)
     brls::Application::registerXMLView("CaptionedImage", CaptionedImage::create);
     brls::Application::registerXMLView("RecyclingListTab", RecyclingListTab::create);
+    brls::Application::registerXMLView("RecyclingTest", RecyclingTest::create);
     brls::Application::registerXMLView("ComponentsTab", ComponentsTab::create);
     brls::Application::registerXMLView("TransformTab", TransformTab::create);
     brls::Application::registerXMLView("TransformBox", TransformBox::create);

@@ -219,7 +219,8 @@ void View::frameHighlight(FrameContext* ctx)
 
 void View::resetClickAnimation()
 {
-    this->clickAlpha.stop();
+    this->clickAlpha.setEndCallback([](bool finished) {});
+    this->clickAlpha.reset(0);
 }
 
 void View::playClickAnimation(bool reverse, bool animateBack, bool force)
@@ -1203,11 +1204,16 @@ void View::onFocusGained()
 {
     this->focused = true;
 
-    Style style = Application::getStyle();
+    if (this->hasParent())
+    {
+        Style style = Application::getStyle();
 
-    this->highlightAlpha.reset();
-    this->highlightAlpha.addStep(1.0f, style["brls/animations/highlight"], EasingFunction::quadraticOut);
-    this->highlightAlpha.start();
+        this->highlightAlpha.reset();
+        this->highlightAlpha.addStep(1.0f, style["brls/animations/highlight"], EasingFunction::quadraticOut);
+        this->highlightAlpha.start();
+    } else {
+        this->highlightAlpha.reset(1.0f);
+    }
 
     this->focusEvent.fire(this);
 
@@ -1229,11 +1235,16 @@ void View::onFocusLost()
 {
     this->focused = false;
 
-    Style style = Application::getStyle();
+    if (this->hasParent())
+    {
+        Style style = Application::getStyle();
 
-    this->highlightAlpha.reset();
-    this->highlightAlpha.addStep(0.0f, style["brls/animations/highlight"], EasingFunction::quadraticOut);
-    this->highlightAlpha.start();
+        this->highlightAlpha.reset();
+        this->highlightAlpha.addStep(0.0f, style["brls/animations/highlight"], EasingFunction::quadraticOut);
+        this->highlightAlpha.start();
+    } else {
+        this->highlightAlpha.reset(0.0f);
+    }
 
     this->focusLostEvent.fire(this);
 

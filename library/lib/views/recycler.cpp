@@ -237,6 +237,8 @@ void RecyclerFrame::reloadData()
     if (!layouted)
         return;
 
+    bool isFocusHere = this->contentBox->isFocused() ? true : this->contentBox->isChildFocused();
+
     auto children = this->contentBox->getChildren();
     for (auto const& child : children)
     {
@@ -268,6 +270,14 @@ void RecyclerFrame::reloadData()
         }
 
         selectRowAt(defaultCellFocus, false);
+
+        if (isFocusHere && this->getLastFocusedView()) {
+            Application::giveFocus(this->getLastFocusedView());
+        }
+    }
+
+    if (isFocusHere && !Application::getCurrentFocus()) {
+        Application::giveFocus(this);
     }
 }
 

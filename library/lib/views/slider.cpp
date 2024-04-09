@@ -77,39 +77,56 @@ Slider::Slider()
         { return true; },
         true, false, SOUND_NONE);
 
-    pointer->addGestureRecognizer(new PanGestureRecognizer([this](PanGestureStatus status, Sound* soundToPlay)
-        {
-        Application::giveFocus(pointer);
+    pointer->addGestureRecognizer(new PanGestureRecognizer(
+[this](PanGestureStatus status, Sound* soundToPlay){
+            Application::giveFocus(pointer);
 
-        static float lastProgress = progress;
+            static float lastProgress = progress;
 
-        if (status.state == GestureState::UNSURE)
-        {
-            *soundToPlay = SOUND_FOCUS_CHANGE;
-            return;
-        }
+            if (status.state == GestureState::UNSURE)
+            {
+                *soundToPlay = SOUND_FOCUS_CHANGE;
+                return;
+            }
 
-        else if (status.state == GestureState::INTERRUPTED || status.state == GestureState::FAILED)
-        {
-            *soundToPlay = SOUND_TOUCH_UNFOCUS;
-            return;
-        }
+            else if (status.state == GestureState::INTERRUPTED || status.state == GestureState::FAILED)
+            {
+                *soundToPlay = SOUND_TOUCH_UNFOCUS;
+                return;
+            }
 
-        else if (status.state == GestureState::START)
-        {
-            lastProgress = progress;
-        }
+            else if (status.state == GestureState::START)
+            {
+                brls::Logger::debug("Slider start");
+                onGesture = true;
+                inProgressing = true;
+                lastProgress = progress;
+            }
 
-        float paddingWidth = getWidth() - pointer->getWidth();
-        float delta        = status.position.x - status.startPosition.x;
+            float paddingWidth = getWidth() - pointer->getWidth();
+            float delta        = status.position.x - status.startPosition.x;
 
-        setProgress(lastProgress + delta / paddingWidth);
+            setProgress(lastProgress + delta / paddingWidth);
 
-        if (status.state == GestureState::END)
-            Application::getPlatform()->getAudioPlayer()->play(SOUND_SLIDER_RELEASE); },
+            if (status.state == GestureState::END)
+            {
+                if (inProgressing && onGesture)
+                {
+                    brls::Logger::debug("Slider end");
+                    inProgressing = false;
+                    onGesture = false;
+                    inputProgressEvent.fire(this->progress);
+                }
+                Application::getPlatform()->getAudioPlayer()->play(SOUND_SLIDER_RELEASE);
+            }
+        },
         PanAxis::HORIZONTAL));
 
-    progress = 0.33f;
+    this->forwardXMLAttribute("focusUp", this->pointer);
+
+    this->forwardXMLAttribute("focusDown", this->pointer);
+
+    progress = 0.0f;
 }
 
 void Slider::onLayout()
@@ -121,6 +138,10 @@ void Slider::onLayout()
 View* Slider::getDefaultFocus()
 {
     return pointer;
+}
+
+bool Slider::isProgressing() {
+    return this->inProgressing;
 }
 
 void Slider::draw(NVGcontext* vg, float x, float y, float width, float height, Style style, FrameContext* ctx)
@@ -137,11 +158,17 @@ void Slider::buttonsProcessing()
         input->updateUnifiedControllerState(&state);
         static bool repeat = false;
 
-        if (state.buttons[BUTTON_NAV_RIGHT] && state.buttons[BUTTON_NAV_LEFT])
+        if (!state.buttons[BUTTON_NAV_RIGHT] && !state.buttons[BUTTON_NAV_LEFT]) {
+            if (inProgressing && !onGesture) {
+                inProgressing = false;
+                inputProgressEvent.fire(this->progress);
+            }
             return;
+        }
 
         if (state.buttons[BUTTON_NAV_RIGHT])
         {
+            inProgressing = true;
             setProgress(progress += step / Application::getFPS());
             if (progress >= 1 && !repeat)
             {
@@ -153,6 +180,7 @@ void Slider::buttonsProcessing()
 
         if (state.buttons[BUTTON_NAV_LEFT])
         {
+            inProgressing = true;
             setProgress(progress -= step / Application::getFPS());
             if (progress <= 0 && !repeat)
             {
@@ -217,6 +245,11 @@ float Slider::getProgress()
 Event<float>* Slider::getProgressEvent()
 {
     return &progressEvent;
+}
+
+Event<float>* Slider::getInputProgressEvent()
+{
+    return &inputProgressEvent;
 }
 
 void Slider::setStep(float step)
